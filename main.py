@@ -1,5 +1,6 @@
 import os
 import pygame
+import sys
 
 START_DIR = os.getcwd()
 W, H = 900, 600
@@ -66,6 +67,7 @@ class Editor:
             ("Ordner", self.ask_folder),
             ("Umbenennen", self.ask_rename),
             ("Loeschen", self.ask_delete),
+            ("Programm beenden", self.quit)
         ]
         self.button_rects = []
 
@@ -418,7 +420,10 @@ class Editor:
         y = H - STATUS
         pygame.draw.rect(self.screen, PANEL, (0, y, W, STATUS))
         self.txt(self.status, (8, y + 4), ERR if self.error else MUTED, self.small)
-
+    
+    def quit(self):
+        pygame.quit()
+        sys.exit()
 
 if __name__ == "__main__":
     Editor().run()
