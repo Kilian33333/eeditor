@@ -1,4 +1,8 @@
 import os
+
+os.environ["SDL_AUDIODRIVER"] = "dummy"
+os.environ.setdefault("XDG_RUNTIME_DIR", "/tmp")
+
 import pygame
 
 START_DIR = os.getcwd()
@@ -43,8 +47,8 @@ class Editor:
         pygame.key.set_repeat(380, 32)
         pygame.display.set_caption("Pygame Editor")
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont("monospace", FONT_SIZE)
-        self.small = pygame.font.SysFont("monospace", 15)
+        self.font = pygame.font.SysFont(None, FONT_SIZE+4)
+        self.small = pygame.font.SysFont(None, 18)
         self.cw, self.lh = self.font.size("M")
 
         self.root = os.path.abspath(START_DIR)
