@@ -29,8 +29,18 @@ def list_dir(path):
 class Editor:
     def __init__(self):
         pygame.init()
+
+        try:
+            self.screen = pygame.display.set_mode((W, H))
+        except pygame.error as e:
+            print("Display konnte nicht gestartet werden:", e)
+            print("SDL_VIDEODRIVER =", os.environ.get("SDL_VIDEODRIVER"))
+            print("DISPLAY =", os.environ.get("DISPLAY"))
+            raise
+
+        if not pygame.display.get_init():
+            raise RuntimeError("Pygame display ist nicht initialisiert")
         pygame.key.set_repeat(380, 32)
-        self.screen = pygame.display.set_mode((W, H))
         pygame.display.set_caption("Pygame Editor")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("monospace", FONT_SIZE)
