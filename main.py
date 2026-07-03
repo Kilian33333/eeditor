@@ -419,10 +419,9 @@ class Editor:
             y = r.y + i * self.lh
             self.txt(str(n + 1).rjust(4), (TREE_W + 6, y + 1), MUTED)
             self.txt(self.lines[n][self.sx:], (r.x + PAD, y + 1), FG)
-        if self.sy <= self.cy < self.sy + r.h // self.lh:
-            x = r.x + PAD + (self.cx - self.sx) * self.cw
-            y = r.y + (self.cy - self.sy) * self.lh
-            pygame.draw.rect(self.screen, FG, (x, y + 2, 2, self.lh - 4))
+        x = r.x + PAD + (self.cx - self.sx) * self.cw
+        y = r.y + (self.cy - self.sy) * self.lh
+        pygame.draw.rect(self.screen, FG, (x, y + 2, 2, self.lh - 4))
 
     def draw_prompt(self):
         if not self.prompt_action:
