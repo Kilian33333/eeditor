@@ -235,11 +235,17 @@ class Editor:
 
     def build_rows(self):
         rows = []
+
+        parent = os.path.dirname(self.root)
+        if parent != self.root:
+            rows.append(("..", -1))
+
         def add(path, depth):
             rows.append((path, depth))
             if path in self.expanded and os.path.isdir(path):
                 for n in list_dir(path):
                     add(os.path.join(path, n), depth + 1)
+
         add(self.root, 0)
         self.rows = rows
 
@@ -248,11 +254,22 @@ class Editor:
         i = (y - TOP) // self.lh + self.tree_scroll
         if not 0 <= i < len(self.rows):
             return
+    
         path, _ = self.rows[i]
+    
+        if path == "..":
+            self.root = os.path.dirname(self.root)
+            self.selected = self.root
+            self.expanded = {self.root}
+            return
+    
         self.selected = path
+    
         if os.path.isdir(path):
-            if path in self.expanded: self.expanded.remove(path)
-            else: self.expanded.add(path)
+            if path in self.expanded:
+                self.expanded.remove(path)
+            else:
+                self.expanded.add(path)
         else:
             self.open_file(path)
 
@@ -275,6 +292,7 @@ class Editor:
         try:
             try:
                 data = open(path, "r", encoding="utf-8").read()
+                data = data.replace("\x00", "")
             except UnicodeDecodeError:
                 data = open(path, "r", encoding="latin-1").read()
         except OSError as e:
@@ -355,6 +373,7 @@ class Editor:
         self.status, self.error = f"{name}    Zeile {self.cy + 1}", False
 
     def txt(self, text, pos, color=FG, font=None):
+        text = str(text).replace("\x00", "")
         self.screen.blit((font or self.font).render(text, True, color), pos)
 
     def draw(self):
