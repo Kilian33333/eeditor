@@ -30,6 +30,7 @@ def list_dir(path):
 class Editor:
     def __init__(self):
         pygame.init()
+        pygame.mouse.set_visible(False)
         pygame.key.set_repeat(380, 32)
         self.screen = pygame.display.set_mode((W, H))
         pygame.display.set_caption("Pygame Editor")
@@ -383,6 +384,7 @@ class Editor:
         self.draw_editor()
         self.draw_prompt()
         self.draw_status()
+        self.draw_main_cursor()
 
     def draw_top(self):
         pygame.draw.rect(self.screen, PANEL, (0, 0, W, TOP))
@@ -439,6 +441,12 @@ class Editor:
         pygame.draw.rect(self.screen, PANEL, (0, y, W, STATUS))
         self.txt(self.status, (8, y + 4), ERR if self.error else MUTED, self.small)
     
+    def draw_main_cursor(self):
+        mx, my = pygame.mouse.get_pos()
+
+        pygame.draw.line(self.screen, (255,255,255), (mx-10,my), (mx+10,my), 1)
+        pygame.draw.line(self.screen, (255,255,255), (mx,my-10), (mx,my+10), 1)
+
     def quit(self):
         pygame.quit()
         sys.exit()
