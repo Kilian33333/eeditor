@@ -138,15 +138,30 @@ class Editor:
             self.prompt_text += e.unicode
 
     def mouse(self, e):
+        button = e.button
+
+        # Linke und rechte Maustaste tauschen
+        if button == 1:
+            button = 3
+        elif button == 3:
+            button = 1
+
         x, y = e.pos
-        for rect, action in self.button_rects:
-            if rect.collidepoint(x, y):
-                action()
-                return
-        if x < TREE_W and y >= TOP:
-            self.click_tree(y)
-        elif x >= TREE_W + LINE_W:
-            self.click_text(x, y)
+
+        if button == 1:
+            # Linksklick-Logik
+            for rect, action in self.button_rects:
+                if rect.collidepoint(x, y):
+                    action()
+                    return
+            if x < TREE_W and y >= TOP:
+                self.click_tree(y)
+            elif x >= TREE_W + LINE_W:
+                self.click_text(x, y)
+
+    elif button == 3:
+        # Rechtsklick-Logik
+        print("Rechtsklick")
 
     def wheel(self, e):
         x, _ = pygame.mouse.get_pos()
