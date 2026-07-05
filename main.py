@@ -463,7 +463,7 @@ class Editor:
         lx = self.small.size(self.prompt_label)[0] + 18
         pygame.draw.rect(self.screen, BG, (lx, y + 5, self.W - lx - 70, PROMPT - 10))
         self.txt(self.prompt_text, (lx + 6, y + 8), FG, self.small)
-        self.txt("Enter", (W - 58, y + 8), MUTED, self.small)
+        self.txt("Enter", (self.W - 58, y + 8), MUTED, self.small)
 
     def draw_status(self):
         y = self.H - STATUS
