@@ -3,7 +3,6 @@ import pygame
 import sys
 
 START_DIR = os.getcwd()
-W, H = 900, 600
 FPS = 30
 FONT_SIZE = 18
 TAB = " " * 4
@@ -32,7 +31,9 @@ class Editor:
         pygame.init()
         pygame.mouse.set_visible(False)
         pygame.key.set_repeat(380, 32)
-        self.screen = pygame.display.set_mode((W, H), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.W = self.screen.get_width()
+        self.H = self.screen.get_height()
         pygame.display.set_caption("Pygame Editor")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("monospace", FONT_SIZE)
@@ -222,8 +223,8 @@ class Editor:
         self.cx = max(0, min(self.cx, len(self.lines[self.cy])))
 
     def editor_rect(self):
-        bottom = H - STATUS - (PROMPT if self.prompt_action else 0)
-        return pygame.Rect(TREE_W + LINE_W, TOP, W - TREE_W - LINE_W, bottom - TOP)
+        bottom = self.H - STATUS - (PROMPT if self.prompt_action else 0)
+        return pygame.Rect(TREE_W + LINE_W, TOP, self.W - TREE_W - LINE_W, bottom - TOP)
 
     def keep_visible(self):
         visible = max(1, self.editor_rect().h // self.lh)
@@ -415,7 +416,7 @@ class Editor:
         self.draw_main_cursor()
 
     def draw_top(self):
-        pygame.draw.rect(self.screen, PANEL, (0, 0, W, TOP))
+        pygame.draw.rect(self.screen, PANEL, (0, 0, self.W, TOP))
         self.button_rects = []
         x = 4
         for text, action in self.buttons:
@@ -427,7 +428,7 @@ class Editor:
             x += bw + 4
 
     def draw_tree(self):
-        bottom = H - STATUS - (PROMPT if self.prompt_action else 0)
+        bottom = self.H - STATUS - (PROMPT if self.prompt_action else 0)
         pygame.draw.rect(self.screen, PANEL, (0, TOP, TREE_W, bottom - TOP))
         self.build_rows()
         y = TOP
@@ -456,17 +457,17 @@ class Editor:
     def draw_prompt(self):
         if not self.prompt_action:
             return
-        y = H - STATUS - PROMPT
-        pygame.draw.rect(self.screen, PANEL, (0, y, W, PROMPT))
+        y = self.H - STATUS - PROMPT
+        pygame.draw.rect(self.screen, PANEL, (0, y, self.W, PROMPT))
         self.txt(self.prompt_label, (8, y + 8), FG, self.small)
         lx = self.small.size(self.prompt_label)[0] + 18
-        pygame.draw.rect(self.screen, BG, (lx, y + 5, W - lx - 70, PROMPT - 10))
+        pygame.draw.rect(self.screen, BG, (lx, y + 5, self.W - lx - 70, PROMPT - 10))
         self.txt(self.prompt_text, (lx + 6, y + 8), FG, self.small)
         self.txt("Enter", (W - 58, y + 8), MUTED, self.small)
 
     def draw_status(self):
-        y = H - STATUS
-        pygame.draw.rect(self.screen, PANEL, (0, y, W, STATUS))
+        y = self.H - STATUS
+        pygame.draw.rect(self.screen, PANEL, (0, y, self.W, STATUS))
         self.txt(self.status, (8, y + 4), ERR if self.error else MUTED, self.small)
     
     def draw_main_cursor(self):
