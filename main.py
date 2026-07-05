@@ -32,7 +32,7 @@ class Editor:
         pygame.init()
         pygame.mouse.set_visible(False)
         pygame.key.set_repeat(380, 32)
-        self.screen = pygame.display.set_mode((W, H))
+        self.screen = pygame.display.set_mode((W, H), pygame.FULLSCREEN)
         pygame.display.set_caption("Pygame Editor")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("monospace", FONT_SIZE)
@@ -65,10 +65,11 @@ class Editor:
             ("Neu", self.new_file),
             ("Oeffnen", self.ask_open),
             ("Speichern", self.save),
+            ("Speichern unter", self.save_as),
             ("Ordner", self.ask_folder),
             ("Umbenennen", self.ask_rename),
             ("Loeschen", self.ask_delete),
-            ("Programm beenden", self.quit)
+            ("Programm beenden", self.quit),
         ]
         self.button_rects = []
 
@@ -109,6 +110,10 @@ class Editor:
         elif ctrl and e.key == pygame.K_s: self.save()
         elif ctrl and e.key == pygame.K_z: self.do_undo()
         elif ctrl and e.key == pygame.K_y: self.do_redo()
+        elif ctrl and e.key == pygame.K_LEFT:
+            self.sx = max(0, self.sx - 2)
+        elif ctrl and e.key == pygame.K_RIGHT:
+            self.sx += 2
         elif e.key == pygame.K_LEFT: self.left()
         elif e.key == pygame.K_RIGHT: self.right()
         elif e.key == pygame.K_UP: self.cy = max(0, self.cy - 1); self.fix_cursor()
@@ -138,13 +143,15 @@ class Editor:
             self.prompt_text += e.unicode
 
     def mouse(self, e):
+        if e.button != 1:   # Nur linke Maustaste
+            return
         x, y = e.pos
         for rect, action in self.button_rects:
             if rect.collidepoint(x, y):
                 action()
                 return
         if x < TREE_W and y >= TOP:
-            self.click_tree(y)
+            self.click_tree(x, y)
         elif x >= TREE_W + LINE_W:
             self.click_text(x, y)
 
@@ -222,6 +229,13 @@ class Editor:
         visible = max(1, self.editor_rect().h // self.lh)
         if self.cy < self.sy: self.sy = self.cy
         if self.cy >= self.sy + visible: self.sy = self.cy - visible + 1
+        
+        # horizontal scroll follow cursor
+        visible_chars = max(1, (self.editor_rect().w // self.cw))
+        if self.cx < self.sx:
+            self.sx = self.cx
+        if self.cx >= self.sx + visible_chars:
+            self.sx = self.cx - visible_chars + 1
 
     def prompt(self, label, text, action, path=None):
         self.prompt_label, self.prompt_text = label, text
@@ -250,27 +264,31 @@ class Editor:
         add(self.root, 0)
         self.rows = rows
 
-    def click_tree(self, y):
+    def click_tree(self, x, y):
         self.build_rows()
         i = (y - TOP) // self.lh + self.tree_scroll
         if not 0 <= i < len(self.rows):
             return
-    
-        path, _ = self.rows[i]
-    
+
+        path, depth = self.rows[i]
+
         if path == "..":
             self.root = os.path.dirname(self.root)
             self.selected = self.root
             self.expanded = {self.root}
             return
-    
+
         self.selected = path
-    
+
         if os.path.isdir(path):
-            if path in self.expanded:
-                self.expanded.remove(path)
-            else:
-                self.expanded.add(path)
+            symbol_x = 6 + depth * 14
+            symbol_w = self.cw * 2
+
+            if symbol_x <= x <= symbol_x + symbol_w:
+                if path in self.expanded:
+                    self.expanded.remove(path)
+                else:
+                    self.expanded.add(path)
         else:
             self.open_file(path)
 
@@ -316,9 +334,19 @@ class Editor:
         if self.file:
             self.write(self.file)
         else:
-            self.prompt("Speichern unter:", os.path.join(self.selected_dir(), "neu.txt"),
-                        lambda v, p: self.write(os.path.abspath(v), set_file=True))
+            self.save_as()  
 
+    def save_as(self):
+        default = os.path.join(
+            self.selected_dir(),
+            os.path.basename(self.file) if self.file else "neu.txt"
+        )
+
+        self.prompt(
+            "Speichern unter:",
+            default,
+            lambda v, p: self.write(os.path.abspath(v), set_file=True)
+        )
     def write(self, path, set_file=False):
         try:
             open(path, "w", encoding="utf-8").write("\n".join(self.lines))
